@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "learn-mlflow"
+version = "0.1.0"
+description = ""
+authors = ["taku-y <taku.yoshioka.4096@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+mlflow = "^1.26.1"
+scikit-learn = "^1.1.1"
+catboost = "^1.0.6"
+category-encoders = "^2.5.0"
+seaborn = "^0.11.2"
+
+[tool.poetry.dev-dependencies]
+jupyterlab = "^3.4.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
