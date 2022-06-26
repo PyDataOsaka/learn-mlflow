@@ -19,3 +19,7 @@ TODO: なぜMLFlow + Optunaか. 後で書く.
 * ノートブックを実行
 
 （後でもっとちゃんと書く）
+
+## その他
+
+* [自分用の作業ログ](https://hackmd.io/qDRLJFBxTcCavCPZZ0KZ9A)（他の人には見えないはず, 見えても困りませんが）
