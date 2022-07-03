@@ -1,24 +1,57 @@
 # learn-mlflow
 
-このリポジトリにはMLFlowを用いてハイパーパラメータ探索を実行する手順を説明するためのノートブックが含まれます.
+このリポジトリには[MLFlow](https://mlflow.org/)を学習するためのノートブックが含まれます.
+以下の2つのディレクトリが存在します.
 
-TODO: なぜMLFlow + Optunaか. 後で書く.
+* `notebook/optuna` - [Optuna](https://www.preferred.jp/ja/projects/optuna/)を用いて予測モデルのハイパーパラメータ探索を実行し,
+  その結果をMLFlowのUIで確認するためのノートブック.
+* `notebook/model` - 訓練した予測モデルを前処理を含めて永続化するためのノートブック.
 
-以下のノートブックがあります.
-
-* `catencoder.ipynb` - TitanicデータセットにCatboostを適用します. Scikit-learnのパイプラインを使用します.
-* `optuna.ipynb` - CatboostのハイパーパラメータをOptunaで最適化します.
-* `mlflow-tracking.ipynb` - MLFlowを用いて実験結果を記録します.
-* `mlflow-optuna.ipynb` - MLFlowを用いてOptunaによるハイパーパラメータ最適化の結果を記録します.
+現時点では1つ目のノートブックに対してのみ詳細な説明があります.
 
 ## 実行方法
 
-* git clone
-* pyenvで仮想環境を作成
-* poetry install
-* ノートブックを実行
+以下の手順で動作確認を行いました.
 
-（後でもっとちゃんと書く）
+1. 本リポジトリを`git clone`します.
+
+  ```bash
+  git clone https://github.com/PyDataOsaka/learn-mlflow.git
+  ```
+
+2. [pyenv](https://github.com/pyenv/pyenv)でPythonのバージョンを3.9.0とします.
+
+  ```bash
+  pyenv install 3.9.0
+  cd learn-mlflow
+  pyenv local 3.9.0
+  ```
+
+3. `learn-mlflow`以下に仮想環境を作成します.
+
+  ```bash
+  # 場所はlearn-mlflow
+  python -m venv venv
+  source venv/bin/activate # 仮想環境をアクティベート
+  pip install --upgrade pip # pipを最新版にします
+  ```
+
+4. 依存ライブラリをインストールします.
+
+  ```bash
+  # 場所はlearn-mlflow, 仮想環境をアクティベート済み
+  poetry install
+  ```
+
+5. Jupyter serverを起動します.
+
+  ```bash
+  # 場所はlearn-mlflow, 仮想環境をアクティベート済み
+  jupyter lab
+  ```
+
+6. ノートブックを実行します. VSCodeのJupyter serverで実行する場合,
+  カーネル用のインタプリタが仮想環境のものであることを確認します.
 
 ## その他
 
