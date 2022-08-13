@@ -35,8 +35,8 @@ marp: true
 ここでは以下について説明します.
 
 * Titanicデータセット
+* 前処理とSklearnパイプライン
 * Catboost
-* Sklearnパイプライン
 * Optuna
 * MLflow Tracking
 
@@ -72,25 +72,175 @@ table {
 |survived|生存状況|カテゴリ, 目的変数|
 
 ---
-## 前処理
+## 前処理とSklearnパイプライン
+
+* 使用する特徴量とクラスラベルの抽出
+
+```python
+df = sns.load_dataset('titanic')
+feature_names = [
+    'class',
+    'sex',
+    'age',
+    'sibsp',
+    'parch',
+    'fare',
+    'embark_town',
+    'deck',
+]
+df_x = df[feature_names]
+df_y = df['survived']
+```
+---
+
+* カテゴリ値を数値に変換するエンコーダを定義
+  * Catboostが自動的にやってくれるかもしれないが念のため
+
+```python
+mapping = [
+    {"col": "class", "mapping": {"First": 0, "Second": 1, "Third": 2}},
+    {"col": "sex", "mapping": {"male": 0, "female": 1}},
+    {"col": "embark_town", "mapping": {"Southampton": 0, "Cherbourg": 1, "Queenstown": 2}},
+    {"col": "deck", "mapping": {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5, "G": 6}},
+]
+
+encoder = ce.OrdinalEncoder(cols=cols, mapping=mapping, handle_unknown='value')
+df_x_enc = encoder.fit_transform(df_x)
+```
+---
+* 前処理をSklearn piplineに挿入可能にする
+  * `transform()`と`fit_transform()`を持つクラスを定義
+
+```python
+class IntOrdEncoder(ce.OrdinalEncoder):
+    def __init__(self, cols, mapping, handle_unknown):
+        super().__init__(cols=cols, mapping=mapping, handle_unknown=handle_unknown)
+        self.cols = cols
+
+    def transform(self, *args, **kwargs):
+        # 省略, fit_transformとほとんど同じ
+
+    def fit_transform(self, *args, **kwargs):
+        x = super().fit_transform(*args, **kwargs)
+        for col in self.cols:
+            # floatをintに変換しないとCatboostがエラーを出す
+            x[col] = x[col].astype(int)
+
+        return x
+```
 
 ---
 ## Catboost
 
+* [Catboost](https://catboost.ai)はYandexが開発した勾配ブースティングのPythonライブラリ（[arxiv](https://arxiv.org/abs/1706.09516)）
+* 特徴は以下の通り
+
+1. Great quality without parameter tuning
+2. Categorical features support
+3. Fast and scalable GPU version
+4. Improved accuracy
+5. Fast prediction
+
 ---
-## Catboostのハイパーパラメータ
+### Catboostのハイパーパラメータ
+
+* [こちら](https://catboost.ai/en/docs/concepts/parameter-tuning)にCatboostのハイパーパラメータがまとめられている
+* 多くのハイパーパラメータがあるが, その中のいくつかを探索
+  * `depth` - Depth of the tree.
+  * `learning_rate` - The learning rate. Used for reducing the gradient step.
+  * `random_strength` - The amount of randomness to use for scoring splits when the tree structure is selected. Use this parameter to avoid overfitting the model.
+  * `l2_leaf_reg` - Coefficient at the L2 regularization term of the cost function. Any positive value is allowed.
 
 ---
 ## Optuna
 
+* [Optuna](https://www.preferred.jp/ja/projects/optuna/)はPFNが開発しているOSSのハイパーパラメータ自動最適化フレームワーク
+* 以下のようなインターフェースを提供
+  * `optuna.Trial` - ハイパーパラメータの分布を定義する機能を提供
+  * 目的関数 - `optuna.Trial`を引数に取り目的値を出力する関数
+  * `optina.study.Study.optimize()` - 目的関数を最適化
+
 ---
-## 探索空間の定義
+## 探索範囲の定義
+
+```python
+def suggest_params(trial: optuna.Trial) -> Dict:
+    return {
+        "depth": trial.suggest_int("depth", 1, 12),
+        "learning_rate": trial.suggest_loguniform("learning_rate", np.exp(-7.0), 1.0),
+        "random_strength": trial.suggest_int("random_strength", 1, 20),
+        "l2_leaf_reg": trial.suggest_loguniform("l2_leaf_reg", 1, 10),
+    }
+```
 
 ---
 ## 目的関数の定義
 
----
-## MLflow
+* 与えられたデータに対する目的関数（`objective`）を返す関数
+
+```python
+def create_objective(x: DataFrame, y: DataFrame) -> Any:
+    (cols, encoder) = titanic_cat_encoder()
+
+    def objective(trial: optuna.Trial) -> Any:
+        params = suggest_params(trial)
+
+        clf = CatBoostClassifier(**params, verbose=False)
+        pipe = make_pipeline(encoder, clf)　# パイプラインを構成
+        score = cross_val_score(pipe, x, y, cv=5).mean() # スコアを計算
+
+        return score
+
+    return objective
+```
 
 ---
-## コンセプト
+## 最適化の実行
+
+* `optuna.study.Study`オブジェクトを生成し, `optimize()`メソッドを実行
+
+```python
+# df_xとdf_yはデータフレーム
+objective = create_objective(df_x, df_y)
+# 目的関数を「最大化」
+study = optuna.create_study(direction='maximize')
+# 10最適化ステップ
+study.optimize(objective, n_trials=10, show_progress_bar=True)
+```
+
+---
+## MLflow Tracking
+
+* 機械学習の実験パラメータ, メトリクス, 出力ファイル等のロギングと可視化の機能を提供
+* 実験を`run`という概念で管理, 各々の`run`は以下の要素を記録：
+  * Start and End time, Source, Parameters, Metrics, Artifacts
+* 実験結果の保存先としてローカルファイルやDB, クラウドなどを選択可
+  * デフォルトではローカルファイルに保存される
+
+---
+
+* `run()`はネスト可能
+
+```python
+def fit_eval(x, y, encoder, params, cols, nested):
+    with mlflow.start_run(nested=nested):
+
+        # 中略, paramsはハイパーパラメータ, scoreは5-fold cvの結果
+
+        mlflow.log_param("depth", params["depth"])
+        mlflow.log_param("learning_rate", params["learning_rate"])
+        mlflow.log_metric("cv_score", score)
+
+        return score
+
+paramss = [
+  {"depth": 1, "learning_rate": 0.01},
+  {"depth": 5, "learning_rate": 0.001},
+]
+
+with mlflow.start_run():
+    (cols, encoder) = titanic_cat_encoder()
+
+    for params in paramss:
+        fit_eval(x_tr, y_tr, encoder, params, cols, nested=True)
+```
