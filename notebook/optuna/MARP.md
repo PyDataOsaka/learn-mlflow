@@ -43,7 +43,7 @@ marp: true
 
 * タイタニック号沈没事故での搭乗者の属性の記録
   * しばしばデータ分析や機械学習のチュートリアルで使用される
-  * 
+  * ここでは搭乗者の生存・非生存を他の属性から予測
 * ノートブックでは[Seaborn](https://seaborn.pydata.org/#)のAPIでデータを取得
 * Seabornのデータセットは元データを加工
   * Titanicデータセットについては[このスクリプト](https://github.com/mwaskom/seaborn-data/blob/master/process/titanic.py)で
@@ -74,11 +74,11 @@ table {
 ---
 ## 前処理とSklearnパイプライン
 
-* 使用する特徴量とクラスラベルの抽出
+* 使用する属性とクラスラベルの抽出
 
 ```python
-df = sns.load_dataset('titanic')
-feature_names = [
+df = sns.load_dataset('titanic') # データセットを取得
+feature_names = [  # 使用する属性のリスト
     'class',
     'sex',
     'age',
@@ -88,8 +88,8 @@ feature_names = [
     'embark_town',
     'deck',
 ]
-df_x = df[feature_names]
-df_y = df['survived']
+df_x = df[feature_names]  # 属性
+df_y = df['survived']     # 生存・非生存
 ```
 ---
 
