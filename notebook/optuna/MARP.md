@@ -4,35 +4,33 @@ marp: true
 # MLflowによるハイパーパラメータ探索のロギング
 
 ---
-## MLflowとは
+## 今回の発表について
 
-* MLライフサイクル管理のためのOSS (DataBricks)
-* 構成がシンプルで, 他のOSSとの組み合わせが容易（らしい）
-* 以下の4つのコンポーネントを提供
-
-  * MLflow Tracking - 実験管理
-  * MLflow Projects - 再現可能なコード
-  * MLflow Models - MLモデルの多様な環境へのデプロイ
-  * MLflow Model Registry - MLモデルリポジトリ
-
-* ここではMLflow Trackingを使用
+* 目標
+* 構成要素の説明
+  * Titanicデータセット
+  * データ前処理とSklearnパイプライン
+  * Catboost
+  * Optuna
+  * MLflow Tracking
+* デモ用に作成したJupyter notebookの実演
 
 ---
-## ハイパーパラメータ探索とMLflow
+## 目標
 
-* MLflowは多数のハイパーパラメータの組み合わせに対する推論結果の管理を容易にする
+* ハイパーパラメータ探索結果の可視化
+  * MLflow Trackingによる実験管理の基礎を学ぶ
 
----
 ## ノートブックの内容
 
-* [Titanicデータセット](https://atmarkit.itmedia.co.jp/ait/articles/2007/02/news016.html)に対して[Catboost](https://catboost.ai/)による訓練と推論
-* Scikit-learnの[パイプライン](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html)を用いた処理の組み合わせ
-* [Optuna](https://www.preferred.jp/ja/projects/optuna/)によるハイパーパラメータ探索
-* MLflowによる実験管理
-* MLflowによるハイパーパラメータ探索結果の管理
+* [Titanicデータセット](https://atmarkit.itmedia.co.jp/ait/articles/2007/02/news016.html)に対する[Catboost](https://catboost.ai/)による訓練と推論 ([catencoder.ipynb](./catencoder.ipynb))
+  * Scikit-learnの[パイプライン](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html)を用いた処理の組み合わせ
+* [Optuna](https://www.preferred.jp/ja/projects/optuna/)によるハイパーパラメータ探索 ([optuna.ipynb](./optuna.ipynb))
+* MLflowによる実験管理 ([mlflow-tracking.ipynb](./mlflow-tracking.ipynb))
+* MLflowによるハイパーパラメータ探索結果の管理 ([mlflow-optuna.ipynb](./mlflow-optuna.ipynb))
 
 ---
-ここでは以下について説明します.
+## 構成要素の説明
 
 * Titanicデータセット
 * 前処理とSklearnパイプライン
@@ -43,7 +41,9 @@ marp: true
 ---
 ## Titanicデータセット
 
-* タイタニック号沈没事故での搭乗者の生存・非生存の記録
+* タイタニック号沈没事故での搭乗者の属性の記録
+  * しばしばデータ分析や機械学習のチュートリアルで使用される
+  * 
 * ノートブックでは[Seaborn](https://seaborn.pydata.org/#)のAPIでデータを取得
 * Seabornのデータセットは元データを加工
   * Titanicデータセットについては[このスクリプト](https://github.com/mwaskom/seaborn-data/blob/master/process/titanic.py)で
@@ -207,6 +207,20 @@ study = optuna.create_study(direction='maximize')
 # 10最適化ステップ
 study.optimize(objective, n_trials=10, show_progress_bar=True)
 ```
+
+---
+## MLflow
+
+* MLライフサイクル管理のためのOSS (DataBricks)
+* 構成がシンプルで, 他のOSSとの組み合わせが容易（らしい）
+* 以下の4つのコンポーネントを提供
+
+  * MLflow Tracking - 実験管理
+  * MLflow Projects - 再現可能なコード
+  * MLflow Models - MLモデルの多様な環境へのデプロイ
+  * MLflow Model Registry - MLモデルリポジトリ
+
+* ここではMLflow Trackingを使用
 
 ---
 ## MLflow Tracking

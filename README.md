@@ -15,40 +15,47 @@
 
 1. 本リポジトリを`git clone`します.
 
-  ```bash
-  git clone https://github.com/PyDataOsaka/learn-mlflow.git
-  ```
+    ```bash
+    git clone https://github.com/PyDataOsaka/learn-mlflow.git
+    ```
 
 2. [pyenv](https://github.com/pyenv/pyenv)でPythonのバージョンを3.9.0とします.
 
-  ```bash
-  pyenv install 3.9.0
-  cd learn-mlflow
-  pyenv local 3.9.0
-  ```
+    ```bash
+    pyenv install 3.9.0
+    cd learn-mlflow
+    pyenv local 3.9.0
+    ```
 
 3. `learn-mlflow`以下に仮想環境を作成します.
 
-  ```bash
-  # 場所はlearn-mlflow
-  python -m venv venv
-  source venv/bin/activate # 仮想環境をアクティベート
-  pip install --upgrade pip # pipを最新版にします
-  ```
+    ```bash
+    # 場所はlearn-mlflow
+    python -m venv venv
+    source venv/bin/activate # 仮想環境をアクティベート
+    pip install --upgrade pip # pipを最新版にします
+    ```
 
 4. 依存ライブラリをインストールします.
 
-  ```bash
-  # 場所はlearn-mlflow, 仮想環境をアクティベート済み
-  poetry install
-  ```
+    ```bash
+    # 場所はlearn-mlflow, 仮想環境をアクティベート済み
+    poetry install
+    ```
+
+    補足：Apple SiliconのMacでは以下のようにします（[参考](https://github.com/numpy/numpy/issues/17807#issuecomment-731014921)）.
+
+    ```bash
+    # brew install openblas でOpenBLASを事前にインストール
+    OPENBLAS="$(brew --prefix openblas)" poetry install
+    ```
 
 5. Jupyter serverを起動します.
 
-  ```bash
-  # 場所はlearn-mlflow, 仮想環境をアクティベート済み
-  jupyter lab
-  ```
+    ```bash
+    # 場所はlearn-mlflow, 仮想環境をアクティベート済み
+    jupyter lab
+    ```
 
 6. ノートブックを実行します. VSCodeのJupyter serverで実行する場合,
   カーネル用のインタプリタが仮想環境のものであることを確認します.
