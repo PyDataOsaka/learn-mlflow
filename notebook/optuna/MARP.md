@@ -33,7 +33,8 @@ marp: true
 ## 構成要素の説明
 
 * Titanicデータセット
-* 前処理とSklearnパイプライン
+* 前処理
+* Sklearnパイプライン
 * Catboost
 * Optuna
 * MLflow Tracking
@@ -72,7 +73,7 @@ table {
 |survived|生存状況|カテゴリ, 目的変数|
 
 ---
-## 前処理とSklearnパイプライン
+## 前処理
 
 * 使用する属性とクラスラベルの抽出
 
@@ -107,6 +108,28 @@ mapping = [
 encoder = ce.OrdinalEncoder(cols=cols, mapping=mapping, handle_unknown='value')
 df_x_enc = encoder.fit_transform(df_x)
 ```
+
+* Catboostのカテゴリ値は整数値とする必要があるが, `OrdinalEncoder`はデフォルトで`float64`を出力
+* `OrdinalEncoder`のコンストラクタに`dtype=int`とすれば良いが,
+  ここではより汎用的な方法であるSklearn pipelineを用いる
+
+---
+## [Sklearn pipeline](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html)
+
+* 様々な前処理と機械学習モデルを組み合わせるためのクラス
+* 組み合わせたパイプラインは一つの機械学習モデルのように扱うことができる
+* 例：入力スケーリング＋SVM
+
+```python
+from sklearn.svm import SVC
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+pipe = Pipeline([('scaler', StandardScaler()), ('svc', SVC())])
+pipe.fit(X_train, y_train)
+```
+
+* 独自の処理を実装可能
+
 ---
 * 前処理をSklearn piplineに挿入可能にする
   * `transform()`と`fit_transform()`を持つクラスを定義
@@ -130,9 +153,9 @@ class IntOrdEncoder(ce.OrdinalEncoder):
 ```
 
 ---
-## Catboost
+## [Catboost](https://catboost.ai)
 
-* [Catboost](https://catboost.ai)はYandexが開発した勾配ブースティングのPythonライブラリ（[arxiv](https://arxiv.org/abs/1706.09516)）
+* Yandexが開発した勾配ブースティングのPythonライブラリ（[arxiv](https://arxiv.org/abs/1706.09516)）
 * 特徴は以下の通り
 
 1. Great quality without parameter tuning
@@ -145,16 +168,16 @@ class IntOrdEncoder(ce.OrdinalEncoder):
 ### Catboostのハイパーパラメータ
 
 * [こちら](https://catboost.ai/en/docs/concepts/parameter-tuning)にCatboostのハイパーパラメータがまとめられている
-* 多くのハイパーパラメータがあるが, その中のいくつかを探索
+* 多くのハイパーパラメータがあるが, ここではその中のいくつかをチューニング
   * `depth` - Depth of the tree.
   * `learning_rate` - The learning rate. Used for reducing the gradient step.
   * `random_strength` - The amount of randomness to use for scoring splits when the tree structure is selected. Use this parameter to avoid overfitting the model.
   * `l2_leaf_reg` - Coefficient at the L2 regularization term of the cost function. Any positive value is allowed.
 
 ---
-## Optuna
+## [Optuna](https://www.preferred.jp/ja/projects/optuna/)
 
-* [Optuna](https://www.preferred.jp/ja/projects/optuna/)はPFNが開発しているOSSのハイパーパラメータ自動最適化フレームワーク
+* PFNが開発しているOSSのハイパーパラメータ自動最適化フレームワーク
 * 以下のようなインターフェースを提供
   * `optuna.Trial` - ハイパーパラメータの分布を定義する機能を提供
   * 目的関数 - `optuna.Trial`を引数に取り目的値を出力する関数
