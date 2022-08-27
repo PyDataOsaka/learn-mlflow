@@ -165,6 +165,25 @@ class IntOrdEncoder(ce.OrdinalEncoder):
 5. Fast prediction
 
 ---
+
+```python
+# データのエンコーディング, マッピングを明示的に
+mapping = [
+    {"col": "class", "mapping": {"First": 0, "Second": 1, "Third": 2}},
+    {"col": "sex", "mapping": {"male": 0, "female": 1}},
+    {"col": "embark_town", "mapping": {"Southampton": 0, "Cherbourg": 1, "Queenstown": 2}},
+    {"col": "deck", "mapping": {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5, "G": 6}},
+]
+encoder = IntOrdEncoder(cols=cols, mapping=mapping, handle_unknown='value')
+x_tr_enc = encoder.fit_transform(x_tr)
+
+# Catboost
+cols = ["class", "sex", "embark_town", "deck"]
+clf = CatBoostClassifier(iterations=1000, cat_features=cols)
+clf.fit(x_tr_enc, y_tr, verbose=False)
+```
+
+---
 ### Catboostのハイパーパラメータ
 
 * [こちら](https://catboost.ai/en/docs/concepts/parameter-tuning)にCatboostのハイパーパラメータがまとめられている
